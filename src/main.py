@@ -1,7 +1,7 @@
 """
 Paradigmas y Lenguajes de Programación I
-1.	Crear una función recursiva que aplique el método de Euler para resolver la ecuación diferencial planteada.
-2.	Graficar en tiempo real la solución a medida que se calculan los valores recursivamente.
+ok1.	Crear una función recursiva que aplique el método de Euler para resolver la ecuación diferencial planteada.
+ok2.	Graficar en tiempo real la solución a medida que se calculan los valores recursivamente.
 3.	Utilizar nodos y estructuras de datos (por ejemplo, listas enlazadas) para almacenar los datos calculados.
 4.	Mostrar los datos almacenados en un formato legible.
 5.	Implementar un menú interactivo con las siguientes opciones:
@@ -53,13 +53,17 @@ Y = Symbol('y')
 F = (- rho * ((Caudal/Area)**2) / 2) + Y + (rho * ((Caudal/Area)**2) / 2).evalf(subs={X: Y })
 
 def metodoEulerRecursivo(f, xi:float, yi:float, xf:float, intervalo:float)-> list[Tuple[float, float]]:
-    # Caso base
-    plt.scatter(xi, F.evalf(subs={X: xi}), color='blue',s=20)
-    plt.scatter(xi, yi , marker='o', color='r',s=20)
-    plt.pause(duracionGrafico*delta_x)  # Pausa para actualizar el gráfico
-    if xi >= xf:
-        return [(xi, yi)]
     
+    plt.scatter(xi, F.evalf(subs={X: xi}), color='blue',s=20)
+    
+    plt.scatter(xi, yi , marker='o', color='r',s=20)
+    # Pausa para actualizar el gráfico
+    plt.pause(duracionGrafico*delta_x)
+
+    # Caso base
+    if xi >= xf: 
+        return [(xi, yi)]
+    #caso recursivo
     return [(xi, yi)] + metodoEulerRecursivo(f, xi + intervalo , yi + intervalo * f(xi, yi) , xf, intervalo)
 
 
