@@ -24,27 +24,24 @@ import numpy as np
 from typing import Tuple
 import matplotlib.pyplot as plt
 
-rho = 1000 # kg/m^3 1000:H2O, 1,2:aire
-areaInicial = 3.1415 * (0.03/2)**2 # m^2
-areaFinal = 3.1415 * (0.05/2)**2 # m^2
-velocidad = 3.0 #m/s
-Caudal = areaInicial * velocidad #m^3/s
+X = Symbol("x")
+media = 3.0
+desvioEst = 0.6
+DistNormal =  (exp(-0.5*((X-media)/desvioEst)**2)) / (sqrt(2 * pi) * desvioEst) 
+
+Area = ( (2 - 2 * DistNormal))/2 * np.pi
+Area_derivada = diff(Area, X)
 
 def A(x: float) -> float:
-    if(x<=areaInicial):
-        return areaInicial
-    elif(x>areaInicial and x<=areaFinal):
-        return(x)
-    elif(x>areaFinal):
-        return areaFinal
+    return Area.evalf(subs={X: x})
 
 def A_derivada(x: float) -> float:
-    if(x<=areaInicial):
-        return 0
-    elif(x>areaInicial and x<=areaFinal):
-        return(1)
-    elif(x>areaFinal):
-        return 0
+    return Area_derivada.evalf(subs={X: x})
+
+rho = 1000 # kg/m^3 1000:H2O, 1,2:aire
+areaInicial = A(0.0) # m^2
+velocidad = 3.0 #m/s
+Caudal = areaInicial * velocidad #m^3/s
 
 def V(x: float, Q: float) -> float:
     return (Q/A(x))
@@ -59,7 +56,7 @@ def metodoEulerRecursivo(f, xi:float, yi:float, xf:float, intervalo:float)-> lis
     # Caso base
     plt.scatter(xi, F.evalf(subs={X: xi}), color='blue',s=20)
     plt.scatter(xi, yi , marker='o', color='r',s=20)
-    #plt.pause(duracionGrafico*delta_x)  # Pausa para actualizar el gráfico
+    plt.pause(duracionGrafico*delta_x)  # Pausa para actualizar el gráfico
     if xi >= xf:
         return [(xi, yi)]
     
@@ -68,13 +65,10 @@ def metodoEulerRecursivo(f, xi:float, yi:float, xf:float, intervalo:float)-> lis
 
 # Parámetros iniciales
 xi = 0.0 # valor inicial de x
-xf = 2 * areaInicial + areaFinal # valor final de x 
+xf = 6.0 # valor final de x 
 Pi = 340000.0  # valor inicial de la presion en Pascales
-delta_x = 0.01
+delta_x = 0.02 # 1-0.002
 intervalo = (xf-xi) * delta_x # tamaño del paso
-
-
-
 
 duracionGrafico = 2 #en segundos
 
@@ -85,6 +79,9 @@ plt.xlabel('x')
 plt.ylabel('P(x)')
 plt.title('Presión en función de la distancia')
 plt.grid(True)
+
+plt.scatter(xi, 0 , marker='o', color='g',s=10)
+plt.scatter(xf, Pi , marker='o', color='g',s=10)
 
 metodoEulerRecursivo(f, xi, Pi, xf, intervalo)
 
