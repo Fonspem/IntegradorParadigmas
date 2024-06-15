@@ -21,11 +21,16 @@ Paradigmas y Lenguajes de Programación I
 """
 
 import math
-from typing import Callable, Tuple
+import time
+from typing import Tuple
+import matplotlib.pyplot as plt
 
-def metodoEulerRecursivo(f: Callable[[float, float], float], xi: float, yi: float,  xf: float,
-                        intervalo: float)-> list[Tuple[float, float]]:
+Tiempo_a_demorar = 10
+
+def metodoEulerRecursivo(f, xi:float, yi:float, xf:float, intervalo:float)-> list[Tuple[float, float]]:
     # Caso base
+    plt.plot([xi, xi + intervalo], [yi, yi + intervalo * f(xi, yi)], marker='o', linestyle='-', color='r')
+    plt.pause(Tiempo_a_demorar/cantIntervalos)  # Pausa para actualizar el gráfico
     if xi >= xf:
         return [(xi, yi)]
     
@@ -43,13 +48,7 @@ def f(x: float, p: float) -> float:
 def V(x: float, Q: float) -> float:
     return (Q/A(x))
 
-
-
 def A(x: float) -> float:
-    #math.sin(x) + 2.7 * math.cos((x ** 2) / (2.7 * x)) + 5 es una funcion basztante aleatoria
-    #return (math.sin(x) + 2)
-    #return 0.2 + 0.1 * x
-
     if(x<=areaInicial):
         return areaInicial
     elif(x>areaInicial and x<=areaFinal):
@@ -58,8 +57,6 @@ def A(x: float) -> float:
         return areaFinal
 
 def A_derivada(x: float) -> float:
-    #return (-math.cos(x))
-    #return 0.1
     if(x<=areaInicial):
         return 0
     elif(x>areaInicial and x<=areaFinal):
@@ -68,35 +65,18 @@ def A_derivada(x: float) -> float:
         return 0
 
 # Parámetros iniciales
-x0 = 0.0  # El valor inicial de x
-y0 = 340000  # El valor inicial de 
-x_end = 2 * areaInicial + areaFinal   # El valor final de x 0.00012665 * 2.5 para una manguera
-step_size = areaInicial/10  # El tamaño del paso
+xi = 0.0  # valor inicial de x
+xf = 2 * areaInicial + areaFinal # valor final de x 
+Pi = 340000.0  # valor inicial de la presion
+delta_x = 0.05
+intervalo = areaInicial* delta_x  # tamaño del paso
+cantIntervalos = (xf - xi)/intervalo
 
-# Resolver la ecuación diferencial usando el método de Euler recursivo
-result = metodoEulerRecursivo(f, x0, y0, x_end, step_size)
-
-# Imprimir los resultados
-for (x, y) in result:
-    print(f"x: {x:.2f}, y: {y:.2f}")
-
-
-import matplotlib.pyplot as plt
-
-# Datos proporcionados
-
-# Separar los datos en listas de x y y
-x_vals, y_vals = zip(*result)
-
-# Crear la gráfica
 plt.figure(figsize=(10, 6))
-plt.plot(x_vals, y_vals, marker='o', linestyle='-', color='b')
-
-# Agregar etiquetas y título
 plt.xlabel('x')
-plt.ylabel('y')
-plt.title('Gráfica de los datos proporcionados')
+plt.ylabel('P(x)')
+plt.title('Presión en función de la distancia')
 plt.grid(True)
 
-# Mostrar la gráfica
+metodoEulerRecursivo(f, xi, Pi, xf, intervalo)
 plt.show()
