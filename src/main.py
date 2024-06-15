@@ -24,15 +24,6 @@ import numpy as np
 from typing import Tuple
 import matplotlib.pyplot as plt
 
-def metodoEulerRecursivo(f, xi:float, yi:float, xf:float, intervalo:float)-> list[Tuple[float, float]]:
-    # Caso base
-    plt.plot([xi, xi + intervalo], [yi, yi + intervalo * f(xi, yi)], marker='o', linestyle=' ', color='r') #linestyle='-'
-    plt.pause(duracionGrafico/cantIntervalos)  # Pausa para actualizar el gráfico
-    if xi >= xf:
-        return [(xi, yi)]
-    
-    return [(xi, yi)] + metodoEulerRecursivo(f, xi + intervalo , yi + intervalo * f(xi, yi) , xf, intervalo)
-
 rho = 1000 # kg/m^3 1000:H2O, 1,2:aire
 areaInicial = 3.1415 * (0.03/2)**2 # m^2
 areaFinal = 3.1415 * (0.05/2)**2 # m^2
@@ -61,14 +52,33 @@ def V(x: float, Q: float) -> float:
 def f(x: float, p: float) -> float:
     return rho * (V(x, Caudal)**2 * A_derivada(x)) / A(x)
 
+Y = Symbol('y')
+F = (- rho * ((Caudal/Area)**2) / 2) + Y + (rho * ((Caudal/Area)**2) / 2).evalf(subs={X: Y })
+
+def metodoEulerRecursivo(f, xi:float, yi:float, xf:float, intervalo:float)-> list[Tuple[float, float]]:
+    # Caso base
+    plt.scatter(xi, F.evalf(subs={X: xi}), color='blue',s=20)
+    plt.scatter(xi, yi , marker='o', color='r',s=20)
+    #plt.pause(duracionGrafico*delta_x)  # Pausa para actualizar el gráfico
+    if xi >= xf:
+        return [(xi, yi)]
+    
+    return [(xi, yi)] + metodoEulerRecursivo(f, xi + intervalo , yi + intervalo * f(xi, yi) , xf, intervalo)
+
+
 # Parámetros iniciales
 xi = 0.0 # valor inicial de x
 xf = 2 * areaInicial + areaFinal # valor final de x 
 Pi = 340000.0  # valor inicial de la presion en Pascales
 delta_x = 0.01
 intervalo = (xf-xi) * delta_x # tamaño del paso
-cantIntervalos = 1/delta_x
-duracionGrafico = 10 #en segundos
+
+
+
+
+duracionGrafico = 2 #en segundos
+
+F = F.evalf(subs={Y: Pi})
 
 plt.figure(figsize=(10, 6))
 plt.xlabel('x')
@@ -77,4 +87,5 @@ plt.title('Presión en función de la distancia')
 plt.grid(True)
 
 metodoEulerRecursivo(f, xi, Pi, xf, intervalo)
+
 plt.show()
