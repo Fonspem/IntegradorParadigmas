@@ -71,10 +71,10 @@ def metodoEulerRecursivo(f, xi:float, yi:float, xf:float, intervalo:float)-> lis
 xi = 0.0 # valor inicial de x
 xf = 6.0 # valor final de x 
 Pi = 340000.0  # valor inicial de la presion en Pascales
-delta_x = 0.02 # 1-0.002
+delta_x = 0.01 # 1-0.002
 intervalo = (xf-xi) * delta_x # tamaño del paso
 
-duracionGrafico = 2 #en segundos
+duracionGrafico = 5 #en segundos
 
 F = F.evalf(subs={Y: Pi})
 
@@ -84,7 +84,7 @@ plt.ylabel('P(x)')
 plt.title('Presión en función de la distancia')
 plt.grid(True)
 
-plt.scatter(xi, 0 , marker='o', color='g',s=10)
+plt.scatter(xi, 290000.0 , marker='o', color='g',s=10)
 plt.scatter(xf, Pi , marker='o', color='g',s=10)
 
 metodoEulerRecursivo(f, xi, Pi, xf, intervalo)
