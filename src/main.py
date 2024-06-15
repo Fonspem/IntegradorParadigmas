@@ -19,18 +19,15 @@ Paradigmas y Lenguajes de Programación I
 7.	Analizar y explicar las diferencias observadas entre ambas soluciones.
 8.	Añadir cualquier otra función que consideres necesaria para mejorar la eficiencia o funcionalidad del programa.
 """
-
-import math
-import time
+from sympy import *
+import numpy as np
 from typing import Tuple
 import matplotlib.pyplot as plt
 
-Tiempo_a_demorar = 10
-
 def metodoEulerRecursivo(f, xi:float, yi:float, xf:float, intervalo:float)-> list[Tuple[float, float]]:
     # Caso base
-    plt.plot([xi, xi + intervalo], [yi, yi + intervalo * f(xi, yi)], marker='o', linestyle='-', color='r')
-    plt.pause(Tiempo_a_demorar/cantIntervalos)  # Pausa para actualizar el gráfico
+    plt.plot([xi, xi + intervalo], [yi, yi + intervalo * f(xi, yi)], marker='o', linestyle=' ', color='r') #linestyle='-'
+    plt.pause(duracionGrafico/cantIntervalos)  # Pausa para actualizar el gráfico
     if xi >= xf:
         return [(xi, yi)]
     
@@ -41,12 +38,6 @@ areaInicial = 3.1415 * (0.03/2)**2 # m^2
 areaFinal = 3.1415 * (0.05/2)**2 # m^2
 velocidad = 3.0 #m/s
 Caudal = areaInicial * velocidad #m^3/s
-
-def f(x: float, p: float) -> float:
-    return rho * (V(x, Caudal)**2 * A_derivada(x)) / A(x)
-
-def V(x: float, Q: float) -> float:
-    return (Q/A(x))
 
 def A(x: float) -> float:
     if(x<=areaInicial):
@@ -64,13 +55,20 @@ def A_derivada(x: float) -> float:
     elif(x>areaFinal):
         return 0
 
+def V(x: float, Q: float) -> float:
+    return (Q/A(x))
+
+def f(x: float, p: float) -> float:
+    return rho * (V(x, Caudal)**2 * A_derivada(x)) / A(x)
+
 # Parámetros iniciales
-xi = 0.0  # valor inicial de x
+xi = 0.0 # valor inicial de x
 xf = 2 * areaInicial + areaFinal # valor final de x 
-Pi = 340000.0  # valor inicial de la presion
-delta_x = 0.05
-intervalo = areaInicial* delta_x  # tamaño del paso
-cantIntervalos = (xf - xi)/intervalo
+Pi = 340000.0  # valor inicial de la presion en Pascales
+delta_x = 0.01
+intervalo = (xf-xi) * delta_x # tamaño del paso
+cantIntervalos = 1/delta_x
+duracionGrafico = 10 #en segundos
 
 plt.figure(figsize=(10, 6))
 plt.xlabel('x')

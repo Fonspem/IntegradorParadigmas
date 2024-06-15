@@ -26,7 +26,7 @@ import matplotlib.pyplot as plt
 
 def metodoEulerRecursivo(f, xi:float, yi:float, xf:float, intervalo:float)-> list[Tuple[float, float]]:
     # Caso base
-    plt.plot([xi, xi + intervalo], [yi, yi + intervalo * f(xi, yi)], marker='o', linestyle=' ', color='r')
+    plt.plot([xi, xi + intervalo], [yi, yi + intervalo * f(xi, yi)], marker='o', linestyle=' ', color='r') #linestyle='-'
     plt.pause(duracionGrafico/cantIntervalos)  # Pausa para actualizar el gráfico
     if xi >= xf:
         return [(xi, yi)]
