@@ -19,53 +19,54 @@ ok2.	Graficar en tiempo real la solución a medida que se calculan los valores r
 7.	Analizar y explicar las diferencias observadas entre ambas soluciones.
 8.	Añadir cualquier otra función que consideres necesaria para mejorar la eficiencia o funcionalidad del programa.
 """
-from sympy import *
-import numpy as np
+from sympy import Symbol, diff, exp, pi, sqrt
 from typing import Tuple
 import matplotlib.pyplot as plt
 
-X = Symbol("x")
+X = Symbol("x") #Variable x de f
 media = 3.0
 desvioEst = 0.6
 DistNormal =  (exp(-0.5*((X-media)/desvioEst)**2)) / (sqrt(2 * pi) * desvioEst) 
 
-Area = ( (2 - 2 * DistNormal))/2 * np.pi
-Area_derivada = diff(Area, X)
-
+Area = ( (2 - 2 * DistNormal))/2 * pi
+  
 def A(x: float) -> float:
     return Area.evalf(subs={X: x})
 
 def A_derivada(x: float) -> float:
-    return Area_derivada.evalf(subs={X: x})
+    return diff(Area, X).evalf(subs={X: x})
 
 rho = 1000 # kg/m^3 1000:H2O, 1,2:aire
 areaInicial = A(0.0) # m^2
 velocidad = 3.0 #m/s
 Caudal = areaInicial * velocidad #m^3/s
 
-def V(x: float, Q: float) -> float:
+def V(x: float, Q: float) -> float: #retorna la velocidad del fuido en base al Area y el Caudal
     return (Q/A(x))
 
-def f(x: float, p: float) -> float:
+def f(x: float, p: float) -> float: #Funcion para Euler
     return rho * (V(x, Caudal)**2 * A_derivada(x)) / A(x)
 
-Y = Symbol('y')
+Y = Symbol('y') # es para cargar el valor de la constante de integracion a la funcion
 F = (- rho * ((Caudal/Area)**2) / 2) + Y + (rho * ((Caudal/Area)**2) / 2).evalf(subs={X: Y })
 
-def metodoEulerRecursivo(f, xi:float, yi:float, xf:float, intervalo:float)-> list[Tuple[float, float]]:
+def metodoEulerRecursivo(f, xi:float, yi:float, xf:float, intervalo:float)-> list[list[float, float]]:
     
+    # Imprime los puntos calculados resolviendo la ecuacion diferencial
     plt.scatter(xi, F.evalf(subs={X: xi}), color='blue',s=20)
     
+    # Imprime los puntos calculados con Aproximacion de Euler
     plt.scatter(xi, yi , marker='o', color='r',s=20)
+    
     # Pausa para actualizar el gráfico
-    plt.pause(duracionGrafico*delta_x)
+    plt.pause(5.0*delta_x)
 
     # Caso base
     if xi >= xf: 
-        return [(xi, yi)]
+        return [xi, yi]
+    
     #caso recursivo
-    return [(xi, yi)] + metodoEulerRecursivo(f, xi + intervalo , yi + intervalo * f(xi, yi) , xf, intervalo)
-
+    return [xi, yi] + metodoEulerRecursivo(f, xi + intervalo , yi + intervalo * f(xi, yi) , xf, intervalo)
 
 # Parámetros iniciales
 xi = 0.0 # valor inicial de x
@@ -74,9 +75,8 @@ Pi = 340000.0  # valor inicial de la presion en Pascales
 delta_x = 0.01 # 1-0.002
 intervalo = (xf-xi) * delta_x # tamaño del paso
 
-duracionGrafico = 5 #en segundos
+F = F.evalf(subs={Y: Pi}) # evaluamos la constante de integracion con la Presion inicial
 
-F = F.evalf(subs={Y: Pi})
 
 plt.figure(figsize=(10, 6))
 plt.xlabel('x')
@@ -84,6 +84,7 @@ plt.ylabel('P(x)')
 plt.title('Presión en función de la distancia')
 plt.grid(True)
 
+#estos puntos son para que se vea bien la escala del grafico, se puden cambiar sin problema
 plt.scatter(xi, 290000.0 , marker='o', color='g',s=10)
 plt.scatter(xf, Pi , marker='o', color='g',s=10)
 
