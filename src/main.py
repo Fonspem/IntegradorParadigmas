@@ -2,7 +2,7 @@
 Paradigmas y Lenguajes de Programación I
 ok1.	Crear una función recursiva que aplique el método de Euler para resolver la ecuación diferencial planteada.
 ok2.	Graficar en tiempo real la solución a medida que se calculan los valores recursivamente.
-3.	Utilizar nodos y estructuras de datos (por ejemplo, listas enlazadas) para almacenar los datos calculados.
+ok3.	Utilizar nodos y estructuras de datos (por ejemplo, listas enlazadas) para almacenar los datos calculados.
 ok4.	Mostrar los datos almacenados en un formato legible.
 ok5.	Implementar un menú interactivo con las siguientes opciones:
 ok    a.	Mostrar los datos calculados.
@@ -182,8 +182,6 @@ def f(x: float, p: float) -> float: #Funcion para Euler
 Y = Symbol('y') # es para cargar el valor de la constante de integracion a la funcion
 F = (- rho * ((Caudal/Area)**2) / 2) + Y + (rho * ((Caudal/Area)**2) / 2).evalf(subs={X: Y })
 
-
-#TODO considerar usar una listan enlazada y dentro un dicc con keys: distancia,presion
 
 def metodoEulerRecursivo(f:float, xi:float, yi:float, xf:float, intervalo:float)-> ListaEnlazada:
     
