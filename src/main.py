@@ -9,7 +9,7 @@ ok    a.	Mostrar los datos calculados.
 ok    b.	Ingresar una coordenada para el cálculo de error:
 ok        i.	Ingresar tiempo y valor de la imagen.
 ok        ii.	Graficar el punto en la gráfica.
-        iii.	Realizar una búsqueda binaria en la lista para calcular el error entre el punto ingresado y el punto correspondiente en el tiempo dado.??? mal planteada la consigna
+ok        iii.	Realizar una búsqueda binaria en la lista para calcular el error entre el punto ingresado y el punto correspondiente en el tiempo dado.??? mal planteada la consigna
     c.	Mostrar historial de coordenadas ingresadas y sus respectivos cálculos de error.
 ok    d.	Buscar un dato en la lista ingresando el tiempo.
 ok    e.	Buscar un dato en la lista ingresando la variable dependiente o su valor más cercano.
@@ -20,16 +20,16 @@ ok    g.	Salir del programa.
 8.	Añadir cualquier otra función que consideres necesaria para mejorar la eficiencia o funcionalidad del programa.
 """
 import os
-from typing import Any, Optional, TypeVar
+from typing import Any, Optional
 from sympy import Symbol, diff, exp, pi, sqrt
 import matplotlib.pyplot as plt
 
 X = Symbol("x") #Variable x de f
 media = 3.0
-desvioEst = 0.6
+desvioEst = 0.49
 DistNormal =  (exp(-0.5*((X-media)/desvioEst)**2)) / (sqrt(2 * pi) * desvioEst) 
 
-Area = ( (2 - 2 * DistNormal))/2 * pi
+Area = ( (2 - 2 * DistNormal))/2 * pi # en metros cuadrados
 
 def A(x: float) -> float:
     return Area.evalf(subs={X: x})
@@ -39,7 +39,7 @@ def A_derivada(x: float) -> float:
 
 rho = 1000 # kg/m^3 1000:H2O, 1,2:aire
 areaInicial = A(0.0) # m^2
-velocidad = 3.0 #m/s
+velocidad = 1.0 #m/s
 Caudal = areaInicial * velocidad #m^3/s
 
 def V(x: float, Q: float) -> float: #retorna la velocidad del fuido en base al Area y el Caudal
@@ -57,10 +57,10 @@ F = (- rho * ((Caudal/Area)**2) / 2) + Y + (rho * ((Caudal/Area)**2) / 2).evalf(
 def metodoEulerRecursivo(f:float, xi:float, yi:float, xf:float, intervalo:float)-> list[list[float, float]]:
     
     # Imprime los puntos calculados con Aproximacion de Euler
-    plt.scatter(xi, yi , marker='o', color='red',s=25)
+    plt.scatter(xi, yi , marker='o', color='red',s=30)
     
     # Imprime los puntos calculados resolviendo la ecuacion diferencial
-    plt.scatter(xi, F.evalf(subs={X: xi}), color='blue',s=10)
+    plt.scatter(xi, F.evalf(subs={X: xi}), color='blue',s=15)
     
     # Pausa para actualizar el gráfico
     #plt.pause(5.0*delta_x)
@@ -75,19 +75,19 @@ def metodoEulerRecursivo(f:float, xi:float, yi:float, xf:float, intervalo:float)
 # Parámetros iniciales
 xi = 0.0 # valor inicial de x
 xf = 6.0 # valor final de x 
-Pi = 340000.0  # valor inicial de la presion en Pascales
+Pi = 20000.0  # valor inicial de la presion en Pascales
 delta_x = 0.01 # 1-0.002
 intervalo = (xf-xi) * delta_x # tamaño del paso
 
 # Variables para almacenar datos y coordenadas
-datos_calculados = []
+datosEuler = []
 coordenadas_ingresadas = []
 errores_de_coordenadas = []
 
 def mostrar_datos():
-    print("Se calcularon:", {len(datos_calculados)-1}, "valores de presión.")
+    print("Se calcularon:", {len(datosEuler)-1}, "valores de presión.")
     print("\n")
-    for dato in datos_calculados:
+    for dato in datosEuler:
         print(f"x: {dato[0]:.4f}, P: {dato[1]:.4f}")
 
 def busquedaBinaria(lista:list, objetivo:Any) -> Optional[int]:
@@ -108,12 +108,19 @@ def busquedaBinaria(lista:list, objetivo:Any) -> Optional[int]:
     return None
 
 def distancia2D(x1:float,y1:float,x2:float,y2:float):
-    return (((x1-x2)**2)+((y1-y2)**2))**(0.5)
+    return float(sqrt(((x1-x2)**2)+((y1-y2)**2)))
 
 def valorMasCercano(valor:float, lista:list[float])-> float:
     mas_cercano = lista[0]
     for n in lista:
         if (n - valor)**2 < (mas_cercano - valor)**2:
+            mas_cercano = n
+    return mas_cercano
+
+def puntoMasCercano(x1:float,y1:float, lista:list[list[float,float]])-> list[float,float]:
+    mas_cercano = lista[0]
+    for n in lista:
+        if distancia2D(x1,y1,n[0],n[1]) < distancia2D(x1,y1,mas_cercano[0],mas_cercano[1]):
             mas_cercano = n
     return mas_cercano
 
@@ -134,43 +141,27 @@ def ingresar_coordenada():
     
     coordenadas_ingresadas.append((distancia, presion))
 
-    #imprime en grafico
-    plt.scatter(distancia, presion, color='green',s=15,marker='s')
-    plt.show(block=False)#no bloquea el programa
-
     print(f"Coordenada (x={distancia}, P={presion}) ingresada.")
 
-    listaDeDistancias:list[float] = []
-    for x in datos_calculados:
-        listaDeDistancias.append(x[0])
+
+    dCerca,pCerca = puntoMasCercano(distancia,presion,datosEuler)
     
-    listaDePresiones:list[float] = []
-    for x in datos_calculados:
-        listaDePresiones.append(x[1])
+    print("La presión mas cercana que se ha precalculado es:", pCerca," Pa, en la posicion: ",dCerca," x.")
+    print("La diferencia con el punto ingresado es:", pCerca-presion," Pa, ",dCerca-distancia," x.")
+        
+    errores_de_coordenadas.append([dCerca-distancia,pCerca-presion])
 
-    indicedCercano = busquedaBinaria(listaDeDistancias,valorMasCercano(distancia, listaDeDistancias))
-    indicepCercano = listaDePresiones.index(valorMasCercano(presion, listaDePresiones))
+    #imprime en grafico
+    plt.scatter(distancia, presion, color='green',s=30,marker='s')
+    plt.scatter(dCerca, pCerca, color='y',s=30,marker='s')
+    plt.show(block=False)#no bloquea el programa
 
-    print(indicedCercano,indicepCercano)
-
-    if distancia2D(distancia,presion,datos_calculados[indicepCercano][0],datos_calculados[indicepCercano][1]) < distancia2D(distancia,presion,datos_calculados[indicedCercano][0],datos_calculados[indicedCercano][1]):
-        plt.scatter(datos_calculados[indicepCercano][0],datos_calculados[indicepCercano][1], color='black',s=25,marker='s')
-        plt.show(block=False)#no bloquea el programa
-
-        print("La presión mas cercana que se ha precalculado es:", datos_calculados[indicepCercano][1]," Pa, en la posicion: ",datos_calculados[indicepCercano][0]," x.")
-        print("La diferencia con el punto ingresado es:", datos_calculados[indicepCercano][1]-presion," Pa, ",datos_calculados[indicepCercano][0]-distancia," x.")
-    else:
-        plt.scatter(datos_calculados[indicedCercano][0], datos_calculados[indicedCercano][1], color='black',s=25,marker='s')
-        plt.show(block=False)#no bloquea el programa
-
-        print("La presión mas cercana que se ha precalculado es:", datos_calculados[indicedCercano][1]," Pa, en la posicion: ",datos_calculados[indicedCercano][0]," x.")
-        print("La diferencia con el punto ingresado es:", datos_calculados[indicedCercano][1]-presion," Pa, ",datos_calculados[indicedCercano][0]-distancia," x.")
 
 def mostrar_historial():
     print("Se ingresaron:", {len(coordenadas_ingresadas)-1}, "coordenadas.")
     print("\n")
-    for coord in coordenadas_ingresadas:
-        print(f"Tiempo: {coord[0]:.4f}, Valor: {coord[1]:.4f}")
+    for n in len(coordenadas_ingresadas):
+        print(f"Distancia: {coordenadas_ingresadas[n][0]:.4f}, Presión: {coordenadas_ingresadas[n][1]:.4f}, De: {errores_de_coordenadas[n][0]:.4f}, Pe: {errores_de_coordenadas[n][1]:.4f}")
 
 def buscar_dato_por_distancia():
     while(True):
@@ -185,13 +176,13 @@ def buscar_dato_por_distancia():
     print("Buscando presión para la distancia:", distancia)
     
     listaDeDistancias = list()
-    for x in datos_calculados:
+    for x in datosEuler:
         listaDeDistancias.append(x[0])
 
     indice = busquedaBinaria(listaDeDistancias,distancia)
     match type(indice):
         case 'int':
-            print("Se encontró la presión:", datos_calculados[indice][1],"en la distancia:", distancia)
+            print("Se encontró la presión:", datosEuler[indice][1],"en la distancia:", distancia)
         case 'None':
             print("No se encontró una presión precalculada para", distancia)
             
@@ -200,7 +191,7 @@ def buscar_dato_por_distancia():
             indiceMasCercano = busquedaBinaria(listaDeDistancias,mas_cercano)
 
             print("La distancia mas cercana a ese valor es:", mas_cercano)
-            print("con una presión de :",datos_calculados[indiceMasCercano][1])
+            print("con una presión de :",datosEuler[indiceMasCercano][1])
 
 def buscar_dato_por_presion():
     while(True):
@@ -216,13 +207,13 @@ def buscar_dato_por_presion():
     print("Buscando la distancia calculada para la presión", presion)
     
     listaDePresiones = list()
-    for x in datos_calculados:
+    for x in datosEuler:
         listaDePresiones.append(x[1])
 
     indice = listaDePresiones.index(valorMasCercano(presion, listaDePresiones))
     match type(indice):
         case 'int':
-            print("Se encontró la presión:",presion ,"en la distancia:", datos_calculados[indice][0])
+            print("Se encontró la presión:",presion ,"en la distancia:", datosEuler[indice][0])
         case 'None':
             print("No se encontró una presión precalculada para", presion)
             
@@ -230,7 +221,7 @@ def buscar_dato_por_presion():
 
             indiceMasCercano = busquedaBinaria(listaDePresiones,mas_cercano)
             print("La presión mas cercana a ese valor es:", mas_cercano)
-            print("en la distancia:",datos_calculados[indiceMasCercano][0])
+            print("en la distancia:",datosEuler[indiceMasCercano][0])
 
 
 # Función principal del menú
@@ -268,6 +259,7 @@ def menu():
                 print("Opción no válida, por favor seleccione una opción del 1 al 7.")
 
 if __name__ == "__main__":
+    print(areaInicial)
     plt.figure(figsize=(10, 6))
     plt.xlabel('x')
     plt.ylabel('P(x)')
@@ -275,7 +267,9 @@ if __name__ == "__main__":
     plt.grid(True)
     F = F.evalf(subs={Y: Pi}) # evaluamos la constante de integracion con la Presion inicial
     with plt.ion():
+        plt.scatter(xi, 0, color='black',s=1,marker='s')
+        plt.scatter(xf, Pi, color='black',s=1,marker='s')
         plt.show()
-        datos_calculados = metodoEulerRecursivo(f, xi, Pi, xf, intervalo)
+        datosEuler = metodoEulerRecursivo(f, xi, Pi, xf, intervalo)
 
     menu()
