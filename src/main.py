@@ -17,12 +17,143 @@ ok    f.	Limpiar la consola.
 ok    g.	Salir del programa.
 6.	Comparar la solución aproximada obtenida por el método de Euler (implementada en el programa) con la solución analítica.
 7.	Analizar y explicar las diferencias observadas entre ambas soluciones.
-8.	Añadir cualquier otra función que consideres necesaria para mejorar la eficiencia o funcionalidad del programa.
+ok8.	Añadir cualquier otra función que consideres necesaria para mejorar la eficiencia o funcionalidad del programa.
 """
 import os
 from typing import Any, Optional
 from sympy import Symbol, diff, exp, pi, sqrt
 import matplotlib.pyplot as plt
+
+class Nodo:
+    def __init__(self, data:Any):
+        self._siguiente = None 
+        self._dato = data
+
+    @property
+    def siguiente(self):
+        return self._siguiente
+
+    @siguiente.setter
+    def siguiente(self, siguiente):
+        self._siguiente = siguiente
+
+    @property
+    def dato(self)->Any:
+        return self._dato
+
+    @dato.setter
+    def dato(self, data:Any):
+        self._dato = data
+
+class ListaEnlazada:
+    def __init__(self):
+        self._cabecera:None|Nodo = None
+        self._cantidadDeNodos:int = 0
+        self._recalcularCant:bool = False
+        self._current_index = 0
+
+    @property
+    def cabecera(self):
+        return self._cabecera
+
+    @cabecera.setter
+    def cabecera(self, valor:Any):
+        self._cabecera = valor
+
+    @property
+    def cantidadDeNodos(self)->int: # recalcula la cantidad de nodos cada vez que se pida
+        if self._recalcularCant:
+            self._cantidadDeNodos = self.contarNodos()
+            self._recalcularCant = False
+        return self._cantidadDeNodos
+    
+    def contarNodos(self) -> int:
+        contador:int = 0
+        actual = self.cabecera
+        while actual != None:
+            actual = actual.siguiente
+            contador += 1
+        return contador
+
+    def añadirAlFinal(self, nodo: Nodo):
+        if self.cabecera:
+            ultimoNodo = self.cabecera
+            while ultimoNodo != None:
+                if ultimoNodo.siguiente != None:
+                    ultimoNodo = ultimoNodo.siguiente
+                else:
+                    ultimoNodo.siguiente = nodo
+                    self._recalcularCant = True
+                    break
+        else:
+            self._recalcularCant = True
+            self.cabecera = nodo
+        return self
+
+    def añadirAlInicio(self, nodo: Nodo):
+        nodo.siguiente = self.cabecera
+        self.cabecera = nodo
+        self._recalcularCant = True
+
+    def eliminarNodo(self, nodo:Nodo):
+        actual = self.cabecera
+        previo = None
+        while actual != None and actual != nodo:
+            previo = actual
+            actual = actual.siguiente
+        if actual is None:
+            self._recalcularCant = True
+            return
+        if previo is None:
+            self.cabecera = actual.siguiente
+        else:
+            previo.siguiente = actual.siguiente
+        actual.siguiente = None
+
+    def mostrarTodosLosNodos(self):# muestra por consola
+        temporal = self.cabecera
+        print("Lista\n",end="->")
+        while temporal != None:
+            print(temporal.dato.presentacion(),end="\n->")
+            temporal = temporal.siguiente
+        print("--Null")
+        print("\n")
+
+    def listado(self)->list[Nodo]:# devuelve lista de nodos
+        temporal = self.cabecera
+        salida = list()
+        while temporal != None:
+            salida.append(temporal)
+            temporal = temporal.siguiente
+        return salida
+
+    def __len__(self):
+        return self.cantidadDeNodos
+    
+    def __add__(self, otra_lista):
+        nueva_lista = ListaEnlazada()
+        temporal = self.cabecera
+        while temporal != None:
+            nueva_lista.añadirAlFinal(Nodo(temporal.dato))
+            temporal = temporal.siguiente
+        temporal = otra_lista.cabecera
+        while temporal != None:
+            nueva_lista.añadirAlFinal(Nodo(temporal.dato))
+            temporal = temporal.siguiente
+
+        return nueva_lista
+    
+    def __iter__(self):
+        return self
+    
+    def __next__(self):
+        if self._current_index < len(self.listado()):
+            item = self.listado()[self._current_index]
+            self._current_index += 1
+            return item.dato
+        else:
+            self._current_index = 0
+            raise StopIteration
 
 X = Symbol("x") #Variable x de f
 media = 3.0
@@ -54,7 +185,7 @@ F = (- rho * ((Caudal/Area)**2) / 2) + Y + (rho * ((Caudal/Area)**2) / 2).evalf(
 
 #TODO considerar usar una listan enlazada y dentro un dicc con keys: distancia,presion
 
-def metodoEulerRecursivo(f:float, xi:float, yi:float, xf:float, intervalo:float)-> list[list[float, float]]:
+def metodoEulerRecursivo(f:float, xi:float, yi:float, xf:float, intervalo:float)-> ListaEnlazada:
     
     # Imprime los puntos calculados con Aproximacion de Euler
     plt.scatter(xi, yi , marker='o', color='red',s=30)
@@ -67,10 +198,10 @@ def metodoEulerRecursivo(f:float, xi:float, yi:float, xf:float, intervalo:float)
 
     # Caso base
     if xi+intervalo >= xf :
-        return [[xi, yi]]
+        return ListaEnlazada().añadirAlFinal(Nodo([xi, yi]))
     
     #caso recursivo
-    return [[xi, yi]]+ metodoEulerRecursivo(f, xi + intervalo , yi + intervalo * f(xi, yi) , xf, intervalo)
+    return ListaEnlazada().añadirAlFinal(Nodo([xi, yi])) + metodoEulerRecursivo(f, xi + intervalo , yi + intervalo * f(xi, yi) , xf, intervalo)
 
 # Parámetros iniciales
 xi = 0.0 # valor inicial de x
@@ -80,15 +211,17 @@ delta_x = 0.01 # 1-0.002
 intervalo = (xf-xi) * delta_x # tamaño del paso
 
 # Variables para almacenar datos y coordenadas
-datosEuler = []
-coordenadas_ingresadas = []
-errores_de_coordenadas = []
+datosEuler = ListaEnlazada()
+coordenadas = ListaEnlazada()
+errorCoordenadas = ListaEnlazada()
 
 def mostrar_datos():
     print("Se calcularon:", {len(datosEuler)-1}, "valores de presión.")
     print("\n")
-    for dato in datosEuler:
-        print(f"x: {dato[0]:.4f}, P: {dato[1]:.4f}")
+    
+    for datos in datosEuler:
+        print(f"x: {type(datos[0])}, P: {type(datos[1])}")
+        print(f"x: {datos[0]:.4f}, P: {datos[1]:.4f}")
 
 def busquedaBinaria(lista:list, objetivo:Any) -> Optional[int]:
     izquierda:int = 0
@@ -98,7 +231,7 @@ def busquedaBinaria(lista:list, objetivo:Any) -> Optional[int]:
         medio:int = (izquierda + derecha) // 2
         valor_medio = lista[medio]
 
-        if valor_medio == objetivo:
+        if abs(valor_medio - objetivo) <= 0.001:
             return medio
         elif valor_medio < objetivo:
             izquierda = medio + 1
@@ -117,8 +250,8 @@ def valorMasCercano(valor:float, lista:list[float])-> float:
             mas_cercano = n
     return mas_cercano
 
-def puntoMasCercano(x1:float,y1:float, lista:list[list[float,float]])-> list[float,float]:
-    mas_cercano = lista[0]
+def puntoMasCercano(x1:float,y1:float, lista:ListaEnlazada)-> list[float,float]:
+    mas_cercano = lista.cabecera.dato
     for n in lista:
         if distancia2D(x1,y1,n[0],n[1]) < distancia2D(x1,y1,mas_cercano[0],mas_cercano[1]):
             mas_cercano = n
@@ -139,7 +272,7 @@ def ingresar_coordenada():
         except:
             print("Reintente el ingreso de datos")
     
-    coordenadas_ingresadas.append((distancia, presion))
+    coordenadas.añadirAlFinal(Nodo([distancia, presion]))
 
     print(f"Coordenada (x={distancia}, P={presion}) ingresada.")
 
@@ -149,7 +282,7 @@ def ingresar_coordenada():
     print("La presión mas cercana que se ha precalculado es:", pCerca," Pa, en la posicion: ",dCerca," x.")
     print("La diferencia con el punto ingresado es:", pCerca-presion," Pa, ",dCerca-distancia," x.")
         
-    errores_de_coordenadas.append([dCerca-distancia,pCerca-presion])
+    errorCoordenadas.añadirAlFinal(Nodo([dCerca-distancia,pCerca-presion]))
 
     #imprime en grafico
     plt.scatter(distancia, presion, color='green',s=30,marker='s')
@@ -158,10 +291,12 @@ def ingresar_coordenada():
 
 
 def mostrar_historial():
-    print("Se ingresaron:", {len(coordenadas_ingresadas)}, "coordenadas.")
+    print("Se ingresó:",len(coordenadas), "coordenada/s.")
     print("\n")
-    for n in range(len(coordenadas_ingresadas)):
-        print(f"Distancia: {coordenadas_ingresadas[n][0]:.4f}, Presión: {coordenadas_ingresadas[n][1]:.4f}, De: {errores_de_coordenadas[n][0]:.4f}, Pe: {errores_de_coordenadas[n][1]:.4f}")
+    for n in range(len(coordenadas)):
+        coord = coordenadas.listado()[n].dato
+        eCoord = errorCoordenadas.listado()[n].dato
+        print(f"Distancia: {coord[0]:.4f}, Presión: {coord[1]:.4f}, De: {eCoord[0]:.4f}, Pe: {eCoord[1]:.4f}")
 
 def buscar_dato_por_distancia():
     while(True):
@@ -173,30 +308,24 @@ def buscar_dato_por_distancia():
             break
         except :
             print("Reintente el ingreso de datos.")
+            
     print("Buscando presión para la distancia:", distancia)
     
     listaDeDistancias = list()
+    
     for x in datosEuler:
         listaDeDistancias.append(x[0])
+    
+    mas_cercano = valorMasCercano(distancia, listaDeDistancias)
 
-    indice = busquedaBinaria(listaDeDistancias,distancia)
-    match type(indice):
-        case 'int':
-            print("Se encontró la presión:", datosEuler[indice][1],"en la distancia:", distancia)
-        case 'None':
-            print("No se encontró una presión precalculada para", distancia)
-            
-            mas_cercano = valorMasCercano(distancia, listaDeDistancias)
-
-            indiceMasCercano = busquedaBinaria(listaDeDistancias,mas_cercano)
-
-            print("La distancia mas cercana a ese valor es:", mas_cercano)
-            print("con una presión de :",datosEuler[indiceMasCercano][1])
+    indiceMasCercano = busquedaBinaria(listaDeDistancias,mas_cercano)
+    print("La distancia precalculada mas cercana a ese valor es:", mas_cercano)
+    print("con una presión de :",datosEuler.listado()[indiceMasCercano].dato[1])
 
 def buscar_dato_por_presion():
     while(True):
         try:
-            presion = float(input("Ingrese posicion: "))
+            presion = float(input("Ingrese presión: "))
             if presion < 0:
                 print("Fuera de rango.")
                 raise Exception
@@ -210,18 +339,10 @@ def buscar_dato_por_presion():
     for x in datosEuler:
         listaDePresiones.append(x[1])
 
-    indice = listaDePresiones.index(valorMasCercano(presion, listaDePresiones))
-    match type(indice):
-        case 'int':
-            print("Se encontró la presión:",presion ,"en la distancia:", datosEuler[indice][0])
-        case 'None':
-            print("No se encontró una presión precalculada para", presion)
-            
-            mas_cercano = valorMasCercano(presion, listaDePresiones)
-
-            indiceMasCercano = busquedaBinaria(listaDePresiones,mas_cercano)
-            print("La presión mas cercana a ese valor es:", mas_cercano)
-            print("en la distancia:",datosEuler[indiceMasCercano][0])
+    indiceMasCercano = listaDePresiones.index(valorMasCercano(presion, listaDePresiones))
+    
+    print("La presión precalculada mas cercana a ese valor es:", datosEuler.listado()[indiceMasCercano].dato[1])
+    print("en la distancia:",datosEuler.listado()[indiceMasCercano].dato[0])
 
 
 # Función principal del menú
@@ -259,7 +380,7 @@ def menu():
                 print("Opción no válida, por favor seleccione una opción del 1 al 7.")
 
 if __name__ == "__main__":
-    print(areaInicial)
+    
     plt.figure(figsize=(10, 6))
     plt.xlabel('x')
     plt.ylabel('P(x)')
