@@ -10,7 +10,7 @@ ok    b.	Ingresar una coordenada para el cálculo de error:
 ok        i.	Ingresar tiempo y valor de la imagen.
 ok        ii.	Graficar el punto en la gráfica.
 ok        iii.	Realizar una búsqueda binaria en la lista para calcular el error entre el punto ingresado y el punto correspondiente en el tiempo dado.??? mal planteada la consigna
-    c.	Mostrar historial de coordenadas ingresadas y sus respectivos cálculos de error.
+ok    c.	Mostrar historial de coordenadas ingresadas y sus respectivos cálculos de error.
 ok    d.	Buscar un dato en la lista ingresando el tiempo.
 ok    e.	Buscar un dato en la lista ingresando la variable dependiente o su valor más cercano.
 ok    f.	Limpiar la consola.
@@ -158,9 +158,9 @@ def ingresar_coordenada():
 
 
 def mostrar_historial():
-    print("Se ingresaron:", {len(coordenadas_ingresadas)-1}, "coordenadas.")
+    print("Se ingresaron:", {len(coordenadas_ingresadas)}, "coordenadas.")
     print("\n")
-    for n in len(coordenadas_ingresadas):
+    for n in range(len(coordenadas_ingresadas)):
         print(f"Distancia: {coordenadas_ingresadas[n][0]:.4f}, Presión: {coordenadas_ingresadas[n][1]:.4f}, De: {errores_de_coordenadas[n][0]:.4f}, Pe: {errores_de_coordenadas[n][1]:.4f}")
 
 def buscar_dato_por_distancia():
