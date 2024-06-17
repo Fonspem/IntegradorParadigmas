@@ -220,7 +220,6 @@ def mostrar_datos():
     print("\n")
     
     for datos in datosEuler:
-        print(f"x: {type(datos[0])}, P: {type(datos[1])}")
         print(f"x: {datos[0]:.4f}, P: {datos[1]:.4f}")
 
 def busquedaBinaria(lista:list, objetivo:Any) -> Optional[int]:
