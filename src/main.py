@@ -192,7 +192,7 @@ def metodoEulerRecursivo(f:float, xi:float, yi:float, xf:float, intervalo:float)
     plt.scatter(xi, F.evalf(subs={X: xi}), color='blue',s=15)
     
     # Pausa para actualizar el gráfico
-    #plt.pause(5.0*delta_x)
+    plt.pause(5.0*delta_x)
 
     # Caso base
     if xi+intervalo >= xf :
