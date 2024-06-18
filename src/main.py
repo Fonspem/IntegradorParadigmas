@@ -149,6 +149,9 @@ X = Symbol("x") #Variable x de f
 media = 3.0
 desvioEst = 1
 
+
+# https://www.geogebra.org/calculator/haggudfp
+
 Area = (((1.5-((2/(desvioEst*sqrt(2*pi)))*exp(-((X-media)**2)/(2*desvioEst))))/2)**2)*pi
 
 def A(x: float) :
@@ -161,7 +164,7 @@ def V(x:float, Q:float) -> float:
     return (Q/A(x))
 
 def V_derivada(x: float) -> float:
-    return -(V(x)*A_derivada(x))/A(x)
+    return -(V(x,Caudal)*A_derivada(x))/A(x)
 
 rho = 1000 # kg/m^3 1000:H2O, 1,2:aire
 areaInicial = A(0.0) # m^2
@@ -169,7 +172,7 @@ velocidad = 1 #m/s
 Caudal = areaInicial * velocidad #m^3/s
 
 def f(x: float, p: float) -> float: #Funcion para Euler dP/dx = -rho * V(x)V'(x)
-    return rho * V(x,Caudal) * V_derivada(x)  # Para que sea mas didactico V'(x) = - V(x)*A'(x)/A(x) y V(x) = Q/A(x)
+    return -rho * V(x,Caudal) * V_derivada(x)  # Para que sea mas didactico V'(x) = - V(x)*A'(x)/A(x) y V(x) = Q/A(x)
 
 Y = Symbol('y') # es para cargar el valor de la constante de integracion a la funcion
 
