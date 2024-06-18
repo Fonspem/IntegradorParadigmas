@@ -20,7 +20,9 @@ ok    g.	Salir del programa.
 ok8.	Añadir cualquier otra función que consideres necesaria para mejorar la eficiencia o funcionalidad del programa.
 """
 import os
+import time
 from typing import Any, Optional
+from numpy import block
 from sympy import Symbol, diff, exp, pi, sqrt
 import matplotlib.pyplot as plt
 
@@ -157,12 +159,11 @@ class ListaEnlazada:
 
 X = Symbol("x") #Variable x de f
 media = 3.0
-desvioEst = 0.49
-DistNormal =  (exp(-0.5*((X-media)/desvioEst)**2)) / (sqrt(2 * pi) * desvioEst) 
+desvioEst = 1
 
-Area = ( (2 - 2 * DistNormal))/2 * pi # en metros cuadrados
+Area = (((1.5-((2/(desvioEst*sqrt(2*pi)))*exp(-((X-media)**2)/(2*desvioEst))))/2)**2)*pi
 
-def A(x: float) -> float:
+def A(x: float) :
     return Area.evalf(subs={X: x})
 
 def A_derivada(x: float) -> float:
@@ -170,7 +171,7 @@ def A_derivada(x: float) -> float:
 
 rho = 1000 # kg/m^3 1000:H2O, 1,2:aire
 areaInicial = A(0.0) # m^2
-velocidad = 1.0 #m/s
+velocidad = 1 #m/s
 Caudal = areaInicial * velocidad #m^3/s
 
 def V(x: float, Q: float) -> float: #retorna la velocidad del fuido en base al Area y el Caudal
@@ -200,6 +201,31 @@ def metodoEulerRecursivo(f:float, xi:float, yi:float, xf:float, intervalo:float)
     
     #caso recursivo
     return ListaEnlazada().añadirAlFinal(Nodo([xi, yi])) + metodoEulerRecursivo(f, xi + intervalo , yi + intervalo * f(xi, yi) , xf, intervalo)
+
+def metodoEulerLineal(f:float, xi:float, yi:float, xf:float, intervalo:float)-> ListaEnlazada:
+    
+    salida = ListaEnlazada()
+    
+    while xi+intervalo <= xf:
+        
+        # Imprime los puntos calculados con Aproximacion de Euler
+        plt.scatter(xi, yi , marker='o', color='red',s=30)
+        
+        # Imprime los puntos calculados resolviendo la ecuacion diferencial
+        plt.scatter(xi, F.evalf(subs={X: xi}), color='blue',s=15)
+        
+        # Pausa para actualizar el gráfico
+        plt.pause(delta_x)
+        
+        
+        salida.añadirAlFinal(Nodo([xi,yi]))
+        
+        xi += intervalo
+        yi += intervalo * f(xi,yi)
+        
+    
+    return salida
+
 
 # Parámetros iniciales
 xi = 0.0 # valor inicial de x
@@ -388,6 +414,7 @@ if __name__ == "__main__":
         plt.scatter(xi, 0, color='black',s=1,marker='s')
         plt.scatter(xf, Pi, color='black',s=1,marker='s')
         plt.show()
-        datosEuler = metodoEulerRecursivo(f, xi, Pi, xf, intervalo)
+        datosEuler = metodoEulerLineal(f, xi, Pi, xf, intervalo)
+        
 
     menu()
