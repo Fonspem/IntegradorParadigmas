@@ -20,7 +20,6 @@ ok    g.	Salir del programa.
 ok8.	Añadir cualquier otra función que consideres necesaria para mejorar la eficiencia o funcionalidad del programa.
 """
 import os
-import time
 from typing import Any, Optional
 from numpy import block
 from sympy import Symbol, diff, exp, pi, sqrt
@@ -202,29 +201,7 @@ def metodoEulerRecursivo(f:float, xi:float, yi:float, xf:float, intervalo:float)
     #caso recursivo
     return ListaEnlazada().añadirAlFinal(Nodo([xi, yi])) + metodoEulerRecursivo(f, xi + intervalo , yi + intervalo * f(xi, yi) , xf, intervalo)
 
-def metodoEulerLineal(f:float, xi:float, yi:float, xf:float, intervalo:float)-> ListaEnlazada:
-    
-    salida = ListaEnlazada()
-    
-    while xi+intervalo <= xf:
-        
-        # Imprime los puntos calculados con Aproximacion de Euler
-        plt.scatter(xi, yi , marker='o', color='red',s=30)
-        
-        # Imprime los puntos calculados resolviendo la ecuacion diferencial
-        plt.scatter(xi, F.evalf(subs={X: xi}), color='blue',s=15)
-        
-        # Pausa para actualizar el gráfico
-        plt.pause(delta_x)
-        
-        
-        salida.añadirAlFinal(Nodo([xi,yi]))
-        
-        xi += intervalo
-        yi += intervalo * f(xi,yi)
-        
-    
-    return salida
+
 
 
 # Parámetros iniciales
