@@ -21,7 +21,6 @@ ok8.	Añadir cualquier otra función que consideres necesaria para mejorar la ef
 """
 import os
 from typing import Any, Optional
-from numpy import block
 from sympy import Symbol, diff, exp, pi, sqrt
 import matplotlib.pyplot as plt
 
@@ -111,15 +110,6 @@ class ListaEnlazada:
             previo.siguiente = actual.siguiente
         actual.siguiente = None
 
-    def mostrarTodosLosNodos(self):# muestra por consola
-        temporal = self.cabecera
-        print("Lista\n",end="->")
-        while temporal != None:
-            print(temporal.dato.presentacion(),end="\n->")
-            temporal = temporal.siguiente
-        print("--Null")
-        print("\n")
-
     def listado(self)->list[Nodo]:# devuelve lista de nodos
         temporal = self.cabecera
         salida = list()
@@ -141,7 +131,6 @@ class ListaEnlazada:
         while temporal != None:
             nueva_lista.añadirAlFinal(Nodo(temporal.dato))
             temporal = temporal.siguiente
-
         return nueva_lista
     
     def __iter__(self):
@@ -168,19 +157,23 @@ def A(x: float) :
 def A_derivada(x: float) -> float:
     return diff(Area, X).evalf(subs={X: x})
 
+def V(x:float, Q:float) -> float:
+    return (Q/A(x))
+
+def V_derivada(x: float) -> float:
+    return -(V(x)*A_derivada(x))/A(x)
+
 rho = 1000 # kg/m^3 1000:H2O, 1,2:aire
 areaInicial = A(0.0) # m^2
 velocidad = 1 #m/s
 Caudal = areaInicial * velocidad #m^3/s
 
-def V(x: float, Q: float) -> float: #retorna la velocidad del fuido en base al Area y el Caudal
-    return (Q/A(x))
-
-def f(x: float, p: float) -> float: #Funcion para Euler
-    return rho * (V(x, Caudal)**2 * A_derivada(x)) / A(x)
+def f(x: float, p: float) -> float: #Funcion para Euler dP/dx = -rho * V(x)V'(x)
+    return rho * V(x,Caudal) * V_derivada(x)  # Para que sea mas didactico V'(x) = - V(x)*A'(x)/A(x) y V(x) = Q/A(x)
 
 Y = Symbol('y') # es para cargar el valor de la constante de integracion a la funcion
-F = (- rho * ((Caudal/Area)**2) / 2) + Y + (rho * ((Caudal/Area)**2) / 2).evalf(subs={X: Y })
+
+Px = (- rho * ((Caudal/Area)**2) / 2) + Y + (rho * ((Caudal/Area)**2) / 2).evalf(subs={X: Y })
 
 def metodoEulerRecursivo(f:float, xi:float, yi:float, xf:float, intervalo:float)-> ListaEnlazada:
     
@@ -188,7 +181,7 @@ def metodoEulerRecursivo(f:float, xi:float, yi:float, xf:float, intervalo:float)
     plt.scatter(xi, yi , marker='o', color='red',s=30)
     
     # Imprime los puntos calculados resolviendo la ecuacion diferencial
-    plt.scatter(xi, F.evalf(subs={X: xi}), color='blue',s=15)
+    plt.scatter(xi, Px.evalf(subs={X: xi}), color='blue',s=15)
     
     # Pausa para actualizar el gráfico
     plt.pause(delta_x)
@@ -382,12 +375,14 @@ if __name__ == "__main__":
     plt.ylabel('P(x)')
     plt.title('Presión en función de la distancia')
     plt.grid(True)
-    F = F.evalf(subs={Y: Pi}) # evaluamos la constante de integracion con la Presion inicial
+
+    Px = Px.evalf(subs={Y: Pi}) # evaluamos la constante de integracion con la Presion inicial
+    
     with plt.ion():
         plt.scatter(xi, 0, color='black',s=1,marker='s')
         plt.scatter(xf, Pi, color='black',s=1,marker='s')
         plt.show()
-        datosEuler = metodoEulerRecursivo(f, xi, Pi, xf, intervalo)
         
+        datosEuler = metodoEulerRecursivo(f, xi, Pi, xf, intervalo)
 
     menu()
