@@ -182,7 +182,6 @@ def f(x: float, p: float) -> float: #Funcion para Euler
 Y = Symbol('y') # es para cargar el valor de la constante de integracion a la funcion
 F = (- rho * ((Caudal/Area)**2) / 2) + Y + (rho * ((Caudal/Area)**2) / 2).evalf(subs={X: Y })
 
-
 def metodoEulerRecursivo(f:float, xi:float, yi:float, xf:float, intervalo:float)-> ListaEnlazada:
     
     # Imprime los puntos calculados con Aproximacion de Euler
@@ -192,7 +191,7 @@ def metodoEulerRecursivo(f:float, xi:float, yi:float, xf:float, intervalo:float)
     plt.scatter(xi, F.evalf(subs={X: xi}), color='blue',s=15)
     
     # Pausa para actualizar el gráfico
-    plt.pause(5.0*delta_x)
+    plt.pause(delta_x)
 
     # Caso base
     if xi+intervalo >= xf :
@@ -200,9 +199,6 @@ def metodoEulerRecursivo(f:float, xi:float, yi:float, xf:float, intervalo:float)
     
     #caso recursivo
     return ListaEnlazada().añadirAlFinal(Nodo([xi, yi])) + metodoEulerRecursivo(f, xi + intervalo , yi + intervalo * f(xi, yi) , xf, intervalo)
-
-
-
 
 # Parámetros iniciales
 xi = 0.0 # valor inicial de x
@@ -391,7 +387,7 @@ if __name__ == "__main__":
         plt.scatter(xi, 0, color='black',s=1,marker='s')
         plt.scatter(xf, Pi, color='black',s=1,marker='s')
         plt.show()
-        datosEuler = metodoEulerLineal(f, xi, Pi, xf, intervalo)
+        datosEuler = metodoEulerRecursivo(f, xi, Pi, xf, intervalo)
         
 
     menu()
